@@ -11,3 +11,12 @@ test('signup rejects a missing password', async () => {
 
   expect(res.statusCode).toBe(400);
 });
+
+test('login rejects an email that does not exist', async () => {
+  const res = await request(app)
+    .post('/login')
+    .send({ email: 'nobody@example.com', password: 'whatever123' });
+
+  expect(res.statusCode).toBe(401);
+  expect(res.body.error).toBe('Invalid email or password');
+});
