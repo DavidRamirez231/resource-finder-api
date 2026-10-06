@@ -57,4 +57,40 @@ app.post('/login', async (req, res) => {
   }
 });
 
+
+function requireAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Not logged in' });
+  }
+
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
+app.post('/resources', requireAuth, async (req, res) => {
+  const { name, category, address, phone, hours, eligibility, description } = req.body;
+
+  if (!name || !category) {
+    return res.status(400).json({ error: 'Name and category are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO resources (name, category, address, phone, hours, eligibility, description, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [name, category, address, phone, hours, eligibility, description, req.user.id]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = app;

@@ -20,3 +20,12 @@ test('login rejects an email that does not exist', async () => {
   expect(res.statusCode).toBe(401);
   expect(res.body.error).toBe('Invalid email or password');
 });
+
+test('adding a resource without a token is blocked', async () => {
+  const res = await request(app)
+    .post('/resources')
+    .send({ name: 'Test Pantry', category: 'food' });
+
+  expect(res.statusCode).toBe(401);
+  expect(res.body.error).toBe('Not logged in');
+});
