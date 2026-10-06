@@ -93,4 +93,21 @@ app.post('/resources', requireAuth, async (req, res) => {
   }
 });
 
+
+app.get('/resources', async (req, res) => {
+  const { category } = req.query;
+
+  try {
+    let result;
+    if (category) {
+      result = await pool.query('SELECT * FROM resources WHERE category = $1', [category]);
+    } else {
+      result = await pool.query('SELECT * FROM resources');
+    }
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = app;

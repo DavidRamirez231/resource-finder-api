@@ -29,3 +29,11 @@ test('adding a resource without a token is blocked', async () => {
   expect(res.statusCode).toBe(401);
   expect(res.body.error).toBe('Not logged in');
 });
+
+test('filtering by a category with no resources returns an empty list', async () => {
+  const res = await request(app)
+    .get('/resources?category=nothing-here');
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body).toEqual([]);
+});
