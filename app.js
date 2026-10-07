@@ -110,4 +110,27 @@ app.get('/resources', async (req, res) => {
   }
 });
 
+
+app.delete('/resources/:id', requireAuth, async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const result = await pool.query('SELECT created_by FROM resources WHERE id = $1', [id]);
+    const resource = result.rows[0];
+
+    if (!resource) {
+      return res.status(404).json({ error: 'Resource not found' });
+    }
+
+    if (resource.created_by !== req.user.id) {
+      return res.status(403).json({ error: 'You can only delete resources you added' });
+    }
+
+    await pool.query('DELETE FROM resources WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = app;

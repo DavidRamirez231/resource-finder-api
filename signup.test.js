@@ -37,3 +37,16 @@ test('filtering by a category with no resources returns an empty list', async ()
   expect(res.statusCode).toBe(200);
   expect(res.body).toEqual([]);
 });
+
+const jwt = require('jsonwebtoken');
+
+test('deleting a resource that does not exist returns 404', async () => {
+  const token = jwt.sign({ id: 1 }, process.env.JWT_SECRET);
+
+  const res = await request(app)
+    .delete('/resources/999999')
+    .set('Authorization', `Bearer ${token}`);
+
+  expect(res.statusCode).toBe(404);
+  expect(res.body.error).toBe('Resource not found');
+});
