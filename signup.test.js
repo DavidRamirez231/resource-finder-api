@@ -50,3 +50,11 @@ test('deleting a resource that does not exist returns 404', async () => {
   expect(res.statusCode).toBe(404);
   expect(res.body.error).toBe('Resource not found');
 });
+
+test('viewing favorites without a token is blocked', async () => {
+  const res = await request(app)
+    .get('/favorites');
+
+  expect(res.statusCode).toBe(401);
+  expect(res.body.error).toBe('Not logged in');
+});

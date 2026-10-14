@@ -133,4 +133,55 @@ app.delete('/resources/:id', requireAuth, async (req, res) => {
   }
 });
 
+
+app.post('/resources/:id/favorite', requireAuth, async (req, res) => {
+  const resourceId = req.params.id;
+  const userId = req.user.id;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO favorites (user_id, resource_id) VALUES ($1, $2) RETURNING *',
+      [userId, resourceId]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Already in your favorites' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+app.get('/favorites', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT resources.*
+       FROM favorites
+       JOIN resources ON favorites.resource_id = resources.id
+       WHERE favorites.user_id = $1`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+app.get('/favorites', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT resources.*
+       FROM favorites
+       JOIN resources ON favorites.resource_id = resources.id
+       WHERE favorites.user_id = $1`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = app;
